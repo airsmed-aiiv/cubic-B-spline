@@ -4,10 +4,24 @@
         <link rel="stylesheet" href="main.css">
     </head>
     <body>
-        <canvas id="c"></canvas>
-        <img src="skin-lesion.jpg" id="my-image" style="display: none;">
+        <p><ul>
+            <li>왼쪽 클릭: 새로운 점 만들기</li>
+            <li>오른쪽 클릭: 마지막 점 만들기</li>
+        </ul></p>
+        <p><ul>
+            <li>하늘색 곡선: 확정된 곡선 세그먼트</li>
+            <li>회색 곡선: 변동가능한 곡선 세그먼트</li>
+        </ul></p>
+        
+        <canvas id="c" onkeydown="onKeyDown"></canvas>
+            <img src="images/skin-lesion.jpg" id="my-image" style="display: none;">
         <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.1.0/fabric.all.min.js"></script>
-        <script src="main.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.1.0/fabric.min.js" 
+        integrity="sha512-T9uV3LxV54oKVYSwORGeHdJ1Ti0WcQvDjAaTvMS6+qfrI5ZRzwxfXVzr7fqodTjfZ6wtbreT5A+65ykwbp4DOw==" crossorigin="anonymous"></script>
+        <script src="app.js"></script>
+        
+        <p><a href="https://github.com/artiq-research/cubic-B-spline">
+            <img src="images/GitHub-Mark-Light-120px-plus.png" width=30>
+            GitHub</a></p>
     </body>
 </html>
