@@ -3,36 +3,19 @@ $(document).ready(function(){
     console.log("app.js loaded");
 });
 
-function init_canvas(){
-    let scale = 4; // image 배율
+let scale = 4; // image 배율
 
-    var canvas = new fabric.Canvas("c", {
-        selection: false,
-        fireRightClick: true,
-        stopContextMenu: true,
-    });
-    canvas.hoverCursor = 'auto';
+let canvas = new fabric.Canvas("c", {
+    selection: false,
+    fireRightClick: true,
+    stopContextMenu: true,
+});
+canvas.hoverCursor = 'auto';
 
-    var imgInstance = new fabric.Image(
-        document.getElementById("my-image"), {
-            left: 0,
-            top: 0,
-            originX: "left",
-            originY: "top",
-            scaleX: scale,
-            scaleY: scale,
-            selectable: false,
-        }
-    )
 
-    canvas.setHeight(imgInstance.height * scale);
-    canvas.setWidth(imgInstance.width * scale);
-    canvas.add(imgInstance);
 
-    return canvas;
-}
 
-let canvas = init_canvas();
+// let canvas = init_canvas();
 let objects = [];
 let points = [
     {x: 310, y: 100},
@@ -175,7 +158,25 @@ function onKeyDown(event){
     console.log(event.keyCode);
 }
 
-draw();
+var imgElement = document.getElementById('my-image');
+var imgSource = imgElement.src;
+
+fabric.Image.fromURL(imgSource, function(img){
+    img.set({
+        left: 0,
+        top: 0,
+        originX: "left",
+        originY: "top",
+        scaleX: scale,
+        scaleY: scale,
+        selectable: false,
+    });
+    canvas.setHeight(img.height * scale);
+    canvas.setWidth(img.width * scale);
+    canvas.add(img);
+    console.log(canvas._objects);
+    draw();
+})
 
 
 /*
