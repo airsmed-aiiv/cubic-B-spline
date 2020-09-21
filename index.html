@@ -40,13 +40,14 @@
     <span class="navbar-toggler-icon"></span>
   </button>
 
+  
   <div class="collapse navbar-collapse" id="navbarsExampleDefault">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
+      <!-- <li class="nav-item active">
         <a class="nav-link" href="https://github.com/artiq-research/cubic-B-spline">
           <h4><i class="fa fa-github" style="font-size:32px"></i> Code</h4>
           <span class="sr-only">(current)</span></a>
-      </li>
+      </li> -->
       <!-- <li class="nav-item">
         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
       </li> -->
@@ -86,16 +87,18 @@
       <div class="col-md-4">
         <h2>Usage</h2>
         <p><ul>
-          <li>Left-click: Create a new point</li>
-          <li>Right-click: Remove the last point</li>
+          <li><strong>Left-click</strong>: Create a new point</li>
+          <li><strong>Right-click</strong>: Remove the clicked point</li>
+          <li><strong>Drag and Drop</strong>: Move a point</li>
       </ul></p>
         <!-- <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p> -->
       </div>
       <div class="col-md-4">
         <h2>Result</h2>
         <p><ul>
-          <li>Blue segment: fixed segment</li>
-          <li>Gray segment: variable segment</li>
+          <li>Blue segment</strong> : fixed segment</li>
+          <li>White segment: variable segment</li>
+          <li>Translucent segment: closing segment</li>
       </ul></p>
 
         <!-- <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p> -->
@@ -104,6 +107,7 @@
         <h2>Theory</h2>
         <p><ul>
           <li>Wikipedia: <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline">Centripetal Catmull–Rom spline</a></li>
+          <li> GitHub: <a href="https://github.com/artiq-research/cubic-B-spline">artiq-research/cubic-B-spline</a></li>
         </ul></p>
           </p>
         <!-- <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p> -->
@@ -112,42 +116,6 @@
 
     <hr>
     <br>
-    <div class="container">
-      <!-- Example row of columns -->
-      <div class="row">
-      <div class="col-md-6">
-          <h2>Cubic Bézier Curve</h2>
-          <br>
-          <p>
-            3차 베지어 곡선(Cubic Bézier Curve)은 3차 다항식을 활용하여 만들어진 부드러운 곡선입니다. 오른쪽의 &ltsvg&gt 엘리먼트에서 네 개의 빨간색 점의 좌표는 왼쪽부터 각각<br> P0(100, 100), P1(200, 200), P2(400, 300), P3(500, 100)입니다. 평면 상에 네개의 점이 주어지면 하나의 3차 베지어 곡선을 결정할 수 있습니다. 다음의 <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths">MDN 링크</a>를 참조하시면, <br><div class="text-center"> M 100 100 C 200 200 400 300 500 100 </div> <br>
-            이라는 커맨드를 통해 3차 베지어 곡선 (검은색)을 그릴 수 있는 것을 확인할 수 있습니다. 따라서 검은색 곡선을 저장하기 위해서는 네개의 점 P0, P1, P2, P3의 좌표만 저장하면 됩니다.<br><br>그리고 3차 베지어 곡선의 중요한 성질로서, 곡선이 처음과 마지막 점인 P0, P3은 지나지만, P1, P2는 일반적으로 지나지 않는다는 사실을 알아두면 좋습니다. 대신 곡선은 P0, P1이 만드는 선분과 P0에서 접선이 일치하고, P2, P3이 만드는 선분과 P3에서 접선이 일치합니다. <br><br>
-          </p>
-          <!-- <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p> -->
-        </div>
-
-        <div class="col-md-6">
-          <h2> B-Spline </h2>
-          <br>
-          이제 점 P0, P1, ..., P9가 주어졌다고 할 때, P0-P1-...-P9-P0을 한바퀴 이어주는 부드러운 곡선을 찾고자 하는 것이 우리의 문제입니다. <br><br>이때 P0에서 P1까지의 구간을 하나의 3차 베지어 곡선으로 표현하고, P1에서 P2까지를 하나의 3차 베지어 곡선으로 표현하고, ..., P9에서 P0까지를 하나의 3차 베지어 곡선으로 표현하여 총 10개의 3차 베지어 곡선을 생성하고자 합니다.<br><br> 여기에서 중요한 것은 P0-P1을 잇는 곡선은 물론 P0에서 시작하여 P1에서 끝나야 하겠지만 거기에 더하여 P1-P2를 잇는 곡선과 매끈하게 이어져야 한다는 점입니다. 이를 위해서는 P0-P1 곡선의 P1에서의 접선과 P1-P2 곡선의 P1에서의 접선이 일치하여야 합니다. <br><br> 이렇게 주어진 n개의 점을 모두 지나면서 매끈하게 연결되는 n개의 베지어 곡선을 생성하는 방법이 바로 B-spline입니다. 정확한 construction 방법은 여러가지가 있지만, 여기에서는 여러가지로 유용한 성질을 가지고 있는 <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline">Centripetal Catmull–Rom spline</a> 방법을 사용하여 코드를 작성하였습니다.
-          <br>
-        </p>
-          <!-- <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p> -->
-        </div>
-      </div>
-            
-
-      <svg width="600" height="400" xmlns="http://www.w3.org/2000/svg" style="background-color: #eee";>
-        <path d="M 100 100 C 200 200, 400 300, 500 100" stroke="black" stroke-width="3" fill="transparent"/>
-        <path d="M 100 100 L 200 200 L 400 300 L 500 100" stroke="blue" fill="transparent"/>
-        <circle cx="100" cy="100" r="5" fill="red"/>
-        <circle cx="200" cy="200" r="5" fill="red"/>
-        <circle cx="400" cy="300" r="5" fill="red"/>
-        <circle cx="500" cy="100" r="5" fill="red"/>
-      </svg>
-    </div>
-  
-      <hr>
-  </div> <!-- /container -->
 
 </main>
 
