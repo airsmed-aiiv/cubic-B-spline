@@ -40,24 +40,23 @@ class Bezier{
         for(let n = 0; n <= 100; n++){
             let t = n/100.;
 
-            let A0 = Bezier.interpolate(P0, P1, 0, 1, t);
-            let A1 = Bezier.interpolate(P1, P2, 0, 1, t);
-            let A2 = Bezier.interpolate(P2, P3, 0, 1, t);
+            let A0 = Bezier.interpolate(P0, P1, t);
+            let A1 = Bezier.interpolate(P1, P2, t);
+            let A2 = Bezier.interpolate(P2, P3, t);
 
-            let B0 = Bezier.interpolate(A0, A1, 0, 1, t);
-            let B1 = Bezier.interpolate(A1, A2, 0, 1, t);
+            let B0 = Bezier.interpolate(A0, A1, t);
+            let B1 = Bezier.interpolate(A1, A2, t);
 
-            let C = Bezier.interpolate(B0, B1, 0, 1, t);
+            let C = Bezier.interpolate(B0, B1, t);
 
             polyline.push(C);
         }
         return polyline;
     }
 
-    static interpolate(P0, P1, t0, t1, t){
+    static interpolate(P0, P1, t){
         // helper 함수
-        let s = (t - t0) / (t1 - t0);
-        return (P0.multiply(1 - s)).plus(P1.multiply(s));
+        return (P0.multiply(1 - t)).plus(P1.multiply(t));
     }
 
     static knot_sequence(P0, P1){
@@ -107,45 +106,132 @@ function Point2Circle(point){
     });
 }
 
+function createCircle(x, y){
+    return new fabric.Circle({
+        radius: 7,
+        strokeWidth:2,
+        stroke: "rgb(220, 220, 220)",
+        fill: "rgb(53, 177, 252)",
+        left: x,
+        top: y,
+        originX: "center",
+        originY: "center",
+        hasControls: false,
+        padding: 5
+    });
+
+}
+
 function getCurrentPoints(canvas){
     // 현재 <canvas>에 표시된 점들을 얻으려면 이 함수를 사용하세요.
-    return canvas._objects
+    return canvas.getObjects()
         .filter(obj => obj.type === "circle")
         .map(obj => new Point(obj.left, obj.top));
 }
 
-function updateCanvas(canvas){
-    // 점이 추가/삭제 되거나 위치가 옮겨질 경우 이 함수를 통해 곡선을 다시 그립니다.
-    canvas._objects
-        .filter(obj => obj.type === "polyline")
+
+class Loop{
+    constructor(points, selected){
+        this.points = points;
+        this.selected = selected;
+    }
+}
+
+let loops = [
+    new Loop(
+        [
+            createCircle(436, 420),
+            createCircle(404, 448),
+            createCircle(415, 490),
+            createCircle(467, 507),
+            createCircle(495, 465),
+            createCircle(479, 443)
+        ],
+        selected=false
+    ),
+    new Loop(
+        [
+            createCircle(310, 100),
+            createCircle(190, 170),
+            createCircle(120, 310),
+            createCircle(160, 380),
+            createCircle(230, 410),
+        ],
+        selected=true
+    )
+]
+
+function getSegmentation(loops){
+    // loop 정보를 추출합니다.
+    return loops.map(loop =>
+        loop.points.map(
+            circle => new Point(circle.left, circle.top)
+        )
+    );
+}
+console.log(JSON.stringify(getSegmentation(loops))); // 이 정보를 저장하면 됩니다!!
+
+function updateCanvas(canvas, loops){
+    // 캔버스 초기화 (그림 빼고 모두 삭제)
+    canvas.getObjects()
+        .filter(obj => obj.type !== "image")
         .map(obj => canvas.remove(obj));
 
+    loops.map(loop => {
+        loop.points.map(
+            circle => {
+                circle.set({fill: loop.selected?"rgb(53, 177, 252)":"rgb(100, 100, 100)"});
+            }
+        )
 
-    let points = getCurrentPoints(canvas);
-    let curves = Bezier.centripetalCatmullRomSpline(points);
-    /*
-    points에 현재 <canvas>에 표시된 점들이 들어있습니다.
-    curves에 현재 <canvas>에 표시된 베지어 곡선들이 들어있습니다. 
-    */
-   
-    for(let i in curves){
-        let color = "rgb(53, 177, 252)"
-        if(i == 0 || i == curves.length - 2){
-            // 맨 첫번째와 뒤에서 2번째 곡선은 새로운 점이 찍히면 위치가 변동될 수 있어서 다른 색깔로 표시
-            color = "rgb(220, 220, 220)";
+        points = loop.points.map(
+            circle => new Point(circle.left, circle.top)
+        );
+        
+        let curves = Bezier.centripetalCatmullRomSpline(points);
+        /*
+        points에 현재 <canvas>에 표시된 점들이 들어있습니다.
+        curves에 현재 <canvas>에 표시된 베지어 곡선들이 들어있습니다. 
+        */
+        if(loop.selected){
+            for(let i in curves){
+                let color;
+                    color = "rgb(53, 177, 252)"
+                    if(i == 0 || i == curves.length - 2){
+                        // 맨 첫번째와 뒤에서 2번째 곡선은 새로운 점이 찍히면 위치가 변동될 수 있어서 다른 색깔로 표시
+                        color = "rgb(220, 220, 220)";
+                    }
+                    else if(i == curves.length - 1){
+                        // 맨 마지막 점에서 맨 첫번째 점으로 가는 곡선은 약간 투명하게 표시
+                        color = "rgba(220, 220, 220, .5)";
+                    }
+                canvas.insertAt(new fabric.Polyline(curves[i].evaluate(), {
+                    stroke: color,
+                    strokeWidth: 4,
+                    fill: "transparent",
+                    selectable: false,
+                }), 1);
+            }
         }
-        else if(i == curves.length - 1){
-            // 맨 마지막 점에서 맨 첫번째 점으로 가는 곡선은 약간 투명하게 표시
-            color = "rgba(220, 220, 220, .5)";
+        else{
+            let boundary = [];
+            for(let i in curves){
+                boundary = boundary.concat(curves[i].evaluate());
+            }
+            canvas.insertAt(new fabric.Polyline(boundary, {
+                stroke: "rgb(0, 0, 0)",
+                strokeWidth: 1,
+                fill: "rgba(100, 100, 100, .4)",
+                selectable: false,
+            }), 1);
+
         }
 
-        canvas.insertAt(new fabric.Polyline(curves[i].evaluate(), {
-            stroke: color,
-            strokeWidth: 4,
-            fill: "transparent",
-            selectable: false,
-        }), 1);
-    }
+        loop.points.map(
+            circle => canvas.add(circle)
+        );
+    });
+    canvas.renderAll()
 }
 
 // 실제 실행되는 코드 시작
@@ -156,7 +242,6 @@ let canvas = new fabric.Canvas("c", {
     stopContextMenu: true,
     hoverCursor: 'auto'
 });
-
 
 fabric.Image.fromURL(document.getElementById('my-image').src, function(img){
     // <canvas>의 바닥에 image를 4배 확대하여 그립니다
@@ -178,61 +263,88 @@ fabric.Image.fromURL(document.getElementById('my-image').src, function(img){
 })
 
 
-// 미리 지정된 점들
-let points = [
-    new Point(310, 100),
-    new Point(190, 170),
-    new Point(120, 310),
-    new Point(160, 380),
-    new Point(230, 410),
-];
-points.map(point => canvas.add(Point2Circle(point)));
-updateCanvas(canvas);
+updateCanvas(canvas, loops);
 
-let created = null;
+
+// 미리 지정된 점들
+// points.map(point => canvas.add(Point2Circle(point)));
+// updateCanvas(canvas);
+
+// let created = null;
+
+let selectedPoint = null;
 
 canvas.on("mouse:down", function(options){ 
     // click 시 point 추가
     if(options.target.selectable){
         // 기존의 점을 클릭할 때
-        if(options.button === 1){
-            // 점을 왼쪽 클릭하여 드래그하는 동작은 fabric.js에서 이미 구현되어 있음
-        }
-        else{
+        selectedPoint = options.target;
+        loops.map(loop => {loop.selected = false;});
+        const selectedLoop = loops.find(loop => loop.points.includes(selectedPoint));
+        selectedLoop.selected = true;
+        if(options.button !== 1){
+            selectedLoop.points = selectedLoop.points.filter(point => point !== selectedPoint);
             // 기존의 점을 오른쪽 클릭하면 삭제
-            canvas.remove(options.target);
         }
     }
     else{
         // 빈 공간을 클릭할 때
         if(options.button === 1){
             // 빈 공간을 왼쪽 클릭하면 새로운 점 (created) 생성
-            let {x, y} = options.pointer;
-            let point = Point2Circle(new Point(x, y))
-            canvas.add(point);
-            created = point;
+            const {x, y} = options.pointer;
+            selectedPoint = createCircle(x, y);
+            const selectedLoop = loops.find(loop => loop.selected);
+            if(selectedLoop === undefined){
+                loops.push(new Loop(
+                    [createCircle(x, y)],
+                    selected=true
+                ))
+            }
+            else{
+                selectedLoop.points.push(selectedPoint);
+            }
         }
         else{
             // 빈 공간을 오른쪽 클릭하면 마지막 점 삭제
-            let circles = canvas._objects
-                .filter(obj => obj.type === "circle")
-            canvas.remove(circles[circles.length - 1]);
+            const selectedLoop = loops.find(loop => loop.selected);
+            selectedLoop.points.pop();
+            if(selectedLoop.points.length >= 1)
+                selectedPoint = selectedLoop.points[selectedLoop.points.length - 1];
         }
     }
-    updateCanvas(canvas);
+    updateCanvas(canvas, loops);
+
 });
 
 canvas.on("mouse:move", function(options){
     // 새로 만든 점 드래그는 fabric.js에 구현이 안되어 있음
-    if(created !== null){
+    if(selectedPoint !== null){
         let {x, y} = options.pointer;
-        created.left = x;
-        created.top = y;
-        created.setCoords();
+        selectedPoint.left = x;
+        selectedPoint.top = y;
+        selectedPoint.setCoords();
     }
-    updateCanvas(canvas);
+    updateCanvas(canvas, loops);
+
 });
 
 canvas.on("mouse:up", function(options){
-    created = null;
+    selectedPoint = null;
 });
+
+document.onkeydown = function(event){
+    let { key } = event;
+    key = key.toUpperCase();
+    if(key === 'C'){
+        // C 키를 누르면 현재 만들고 있는 고리를 완성하고, 
+        // 새로운 고리를 만들기 시작합니다.
+        loops.map(loop => {loop.selected = false;});
+        updateCanvas(canvas, loops);
+    }
+    else if(key == 'X'){
+        // X 키를 누르면 선택된 고리를 삭제합니다.
+        const selectedLoop = loops.find(loop => loop.selected);
+        loops = loops.filter(loop => loop !== selectedLoop);
+        updateCanvas(canvas, loops);
+    }
+}
