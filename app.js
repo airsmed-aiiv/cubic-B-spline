@@ -307,11 +307,14 @@ canvas.on("mouse:down", function(options){
         else{
             // 빈 공간을 오른쪽 클릭하면 마지막 점 삭제
             const selectedLoop = loops.find(loop => loop.selected);
-            selectedLoop.points.pop();
-            if(selectedLoop.points.length >= 1)
-                selectedPoint = selectedLoop.points[selectedLoop.points.length - 1];
+            if(selectedLoop !== undefined){
+                selectedLoop.points.pop();
+                if(selectedLoop.points.length >= 1)
+                    selectedPoint = selectedLoop.points[selectedLoop.points.length - 1];
+            }
         }
     }
+    loops = loops.filter(loop => loop.points.length >= 1);
     updateCanvas(canvas, loops);
 
 });
