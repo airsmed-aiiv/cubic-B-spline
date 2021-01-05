@@ -12,7 +12,7 @@
   - 점을 드래그할 수 있는 기능을 추가하였습니다.
 
 ## Demo Site
-https://artiq.synology.me:909/
+https://artiq.synology.me:908/
 
 ## Code Description
 `app.js` 파일에 필요한 알고리즘을 모두 구현하였습니다. 먼저 구현한 자료구조 class들에 대해 설명드리겠습니다.
