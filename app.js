@@ -1,6 +1,6 @@
 class Point{
+    // 2차원 평면 상의 점을 나타내는 클래스입니다.
     constructor(x, y){
-        // 2차원 평면 상의 점을 나타내는 클래스입니다.
         this.x = x;
         this.y = y;
     }
@@ -14,22 +14,9 @@ class Point{
 
 
 class Bezier{
+    // 베지어 곡선은 4개의 점에 의해 결정됩니다.
     constructor(P0, P1, P2, P3){
-        // 베지어 곡선은 4개의 점에 의해 결정됩니다.
         this.points = [P0, P1, P2, P3];
-    }
-
-    static centripetalCatmullRomSpline(points){
-        // n개의 점을 입력받으면, n개의 베지어 곡선의 리스트를 반환합니다.
-        let result = [];
-        let N = points.length;
-    
-        for(let i = -1; i < N - 1; i++){
-            result.push(this.curve_segment(
-                points[(i+N)%N], points[i + 1], points[(i+2)%N], points[(i+3)%N]));
-        }
-        
-        return result;
     }
     
     evaluate(){
@@ -40,24 +27,51 @@ class Bezier{
         for(let n = 0; n <= 100; n++){
             let t = n/100.;
 
-            let A0 = Bezier.interpolate(P0, P1, 0, 1, t);
-            let A1 = Bezier.interpolate(P1, P2, 0, 1, t);
-            let A2 = Bezier.interpolate(P2, P3, 0, 1, t);
+            let A0 = Bezier.interpolate(P0, P1, t);
+            let A1 = Bezier.interpolate(P1, P2, t);
+            let A2 = Bezier.interpolate(P2, P3, t);
 
-            let B0 = Bezier.interpolate(A0, A1, 0, 1, t);
-            let B1 = Bezier.interpolate(A1, A2, 0, 1, t);
+            let B0 = Bezier.interpolate(A0, A1, t);
+            let B1 = Bezier.interpolate(A1, A2, t);
 
-            let C = Bezier.interpolate(B0, B1, 0, 1, t);
+            let C = Bezier.interpolate(B0, B1, t);
 
             polyline.push(C);
         }
         return polyline;
     }
 
-    static interpolate(P0, P1, t0, t1, t){
+    static interpolate(P0, P1, t){
         // helper 함수
-        let s = (t - t0) / (t1 - t0);
-        return (P0.multiply(1 - s)).plus(P1.multiply(s));
+        return P0.multiply(1 - t).plus(P1.multiply(t));
+    }
+
+}
+
+class Loop{
+    // 하나의 고리로 둘러싸인 영역을 나타냅니다.
+    // 고리가 미완성으로 열려 있을 때는 closed: false이고, 닫힌 고리가 되면 closed: true가 됩니다.
+    // centripetalCatmullRomSpline 함수를 통해 Loop를 array<Bezier>로 변환할 수 있습니다.
+    constructor(points){
+        this.points = points;
+        this.closed = false;
+    }
+
+    centripetalCatmullRomSpline(points){
+        // n개의 점을 입력받으면, n개의 베지어 곡선의 리스트를 반환합니다.
+        // 원래 class Bezier에 있던 함수인데 class Loop를 새로 만들면서 이곳으로 이동하였습니다.
+        let result = [];
+        let N = this.points.length;
+    
+        for(let i = -1; i < N - 1; i++){
+            result.push(this.curve_segment(
+                this.points[(i+N)%N], 
+                this.points[(i+1)%N], 
+                this.points[(i+2)%N], 
+                this.points[(i+3)%N]));
+        }
+        
+        return result;
     }
 
     static knot_sequence(P0, P1){
@@ -86,6 +100,14 @@ class Bezier{
         let Q2 = P2.minus(m2.divide(3));
     
         return new Bezier(P1, Q1, Q2, P2);
+    }
+}
+
+class Segmentation{
+    // 여러 개의 Loop를 모아 한 이미지에 대한 segmentation을 구성하게 됩니다.
+    // Segmentation이 최종적으로 저장될 레이블링 데이터입니다.
+    constructor(loops){
+        this.loops = loops;
     }
 }
 
