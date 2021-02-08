@@ -8,7 +8,7 @@ import requests
 
 # upload input.jpg
 res = requests.post(
-    'http://175.209.239.35:8080/api/skin_area',
+    'http://artiq.xyz/api/skin_area',
     files={'file': open('input.jpg', 'rb').read()}
 )
 
@@ -19,5 +19,5 @@ with open('output.png', 'wb') as f:
 
 ### Bash
 ```Bash
-$ curl -X POST -F 'file=@./input.jpg' -o 'output.png' http://175.209.239.35:8080/api/skin_area
+$ curl -X POST -F 'file=@./input.jpg' -o 'output.png' http://artiq.xyz:8080/api/skin_area
 ```
