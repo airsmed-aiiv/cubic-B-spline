@@ -1,1 +1,0 @@
-curl -X POST -F 'file=@./input.jpg' -o 'output.png' http://175.209.239.35:8080/api/skin_area
